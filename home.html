@@ -3,256 +3,334 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Home</title>
+  <title>Access Granted</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0b0c0e;
-      --surface: #13151a;
-      --border: #222430;
-      --accent: #c8f04e;
-      --text: #e8e9ed;
-      --muted: #6b6f7e;
+      --bg: #0d0d0d;
+      --surface: #141414;
+      --border: #262626;
+      --green: #22c55e;
+      --green-dim: #16a34a;
+      --green-dark: #052e16;
+      --text: #f5f5f5;
+      --muted: #525252;
+      --red: #ef4444;
     }
 
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'DM Mono', monospace;
+      font-family: 'IBM Plex Sans', sans-serif;
       min-height: 100vh;
     }
 
+    /* subtle noise texture */
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(200,240,78,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(200,240,78,0.025) 1px, transparent 1px);
-      background-size: 48px 48px;
-      pointer-events: none;
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
     }
 
     nav {
-      position: fixed; top: 0; left: 0; right: 0;
-      background: rgba(11,12,14,0.85);
-      backdrop-filter: blur(12px);
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(13,13,13,0.9);
       border-bottom: 1px solid var(--border);
-      padding: 0 40px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 100;
+      backdrop-filter: blur(8px);
+      padding: 0 40px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
     }
 
-    .nav-logo {
-      font-family: 'DM Serif Display', serif;
-      font-size: 18px;
-      letter-spacing: 0.02em;
+    .nav-left {
+      display: flex; align-items: center; gap: 16px;
     }
 
-    .nav-logo span { color: var(--accent); }
+    .nav-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .nav-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px; color: var(--muted);
+      letter-spacing: 0.08em;
+    }
 
     .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      font-size: 11px;
-      color: var(--muted);
+      display: flex; align-items: center; gap: 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; color: var(--muted);
     }
 
-    #user-display {
-      color: var(--accent);
-      letter-spacing: 0.1em;
-    }
+    .nav-user { color: var(--green); }
 
     .logout-btn {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      padding: 6px 14px;
-      border-radius: 2px;
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 6px 14px; cursor: pointer; transition: all 0.2s;
     }
-    .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
 
     main {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 120px 40px 80px;
-      animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+      position: relative; z-index: 1;
+      max-width: 900px; margin: 0 auto;
+      padding: 100px 40px 80px;
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* Top status bar */
+    .status-bar {
+      display: flex; align-items: center; gap: 24px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; color: var(--muted);
+      margin-bottom: 64px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
     }
 
-    .welcome-tag {
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      color: var(--accent);
-      text-transform: uppercase;
+    .status-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--green-dark);
+      border: 1px solid var(--green-dim);
+      padding: 4px 12px; border-radius: 2px;
+      color: var(--green); font-size: 10px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    .status-chip span { font-size: 14px; }
+
+    /* Main heading */
+    .heading-area { margin-bottom: 56px; }
+
+    .pre-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.15em; text-transform: uppercase;
       margin-bottom: 16px;
     }
 
     h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(40px, 6vw, 68px);
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
       line-height: 1.05;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+      color: var(--text);
     }
 
-    h1 em { font-style: italic; color: var(--accent); }
+    h1 .green { color: var(--green); }
 
-    .subtitle {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.8;
-      max-width: 480px;
-      margin-bottom: 56px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-      margin-bottom: 48px;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 28px;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.2s, transform 0.2s;
-      cursor: default;
-    }
-
-    .card:hover {
-      border-color: rgba(200,240,78,0.3);
-      transform: translateY(-2px);
-    }
-
-    .card::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--accent);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
-    }
-    .card:hover::after { transform: scaleX(1); }
-
-    .card-icon {
-      font-size: 22px;
-      margin-bottom: 14px;
-    }
-
-    .card h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 18px;
-      font-weight: 400;
-      margin-bottom: 8px;
-    }
-
-    .card p {
-      font-size: 11px;
+    .sub {
+      font-size: 15px;
       color: var(--muted);
       line-height: 1.7;
+      max-width: 560px;
+      font-weight: 300;
     }
 
-    .status-bar {
+    /* Flag section */
+    .flag-section {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 16px 24px;
+      border-left: 3px solid var(--green);
+      padding: 28px 32px;
+      margin-bottom: 40px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .flag-left {}
+
+    .flag-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .flag-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(14px, 2.5vw, 20px);
+      font-weight: 500;
+      color: var(--green);
+      letter-spacing: 0.05em;
+    }
+
+    .copy-btn {
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 8px 16px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .copy-btn:hover { border-color: var(--green); color: var(--green); }
+
+    /* Two column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 24px;
+    }
+
+    .card-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .card-value {
+      font-size: 15px; font-weight: 600;
+      color: var(--text); line-height: 1.4;
+    }
+
+    .card-value.green { color: var(--green); }
+
+    /* Members section */
+    .members-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 28px 32px;
+      margin-bottom: 40px;
+    }
+
+    .members-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .members-grid {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+
+    .member-chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      font-size: 13px; font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+
+    /* Bottom disclaimer */
+    .disclaimer {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 28px; line-height: 1.9;
+    }
+
+    .disclaimer .green { color: var(--green-dim); }
+
+    #clock {
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 11px;
-      color: var(--muted);
     }
 
-    .status-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-      animation: pulse 2s ease-in-out infinite;
-      flex-shrink: 0;
+    @media (max-width: 640px) {
+      .two-col { grid-template-columns: 1fr; }
+      nav { padding: 0 20px; }
+      main { padding: 80px 20px 60px; }
+      .flag-section { flex-direction: column; align-items: flex-start; }
     }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    #clock { color: var(--text); margin-left: auto; }
   </style>
 </head>
 <body>
   <nav>
-    <div class="nav-logo">my<span>.</span>app</div>
+    <div class="nav-left">
+      <div class="nav-dot"></div>
+      <span class="nav-title">IT023-IT33S2 // SESSION ACTIVE</span>
+    </div>
     <div class="nav-right">
-      <span>logged in as <span id="user-display">—</span></span>
+      <span id="clock"></span>
+      <span class="nav-user" id="user-display">—</span>
       <button class="logout-btn" onclick="logout()">Log out</button>
     </div>
   </nav>
 
   <main>
-    <div class="welcome-tag">dashboard</div>
-    <h1>Welcome back,<br><em id="hero-user">user</em>.</h1>
-    <p class="subtitle">You're now inside the protected area. This home page is only accessible after a successful login.</p>
+    <div class="status-bar">
+      <div class="status-chip"><span>✓</span> Access Granted</div>
+      <span>Authentication bypassed</span>
+      <span style="margin-left:auto">Session: <span style="color:var(--text)" id="session-id">—</span></span>
+    </div>
 
-    <div class="cards">
-      <div class="card">
-        <div class="card-icon">📁</div>
-        <h3>Your Files</h3>
-        <p>Access and manage your uploaded documents and assets from one place.</p>
+    <div class="heading-area">
+      <div class="pre-label">// target compromised</div>
+      <h1>Congratulations,<br>you <span class="green">got in.</span></h1>
+      <p class="sub">You've successfully accessed this restricted page through hacking or brute force. This is what ethical hackers do — find the gaps before others do.</p>
+    </div>
+
+    <div class="flag-section">
+      <div class="flag-left">
+        <div class="flag-label">Capture The Flag — Submit this to your instructor</div>
+        <div class="flag-value">FLAG{gr0up5_h4s_b33n_pwn3d}</div>
       </div>
-      <div class="card">
-        <div class="card-icon">⚙️</div>
-        <h3>Settings</h3>
-        <p>Customize your account preferences, notifications, and security options.</p>
+      <button class="copy-btn" onclick="copyFlag(this)">Copy Flag</button>
+    </div>
+
+    <div class="two-col">
+      <div class="info-card">
+        <div class="card-label">Logged in as</div>
+        <div class="card-value green" id="hero-user">—</div>
       </div>
-      <div class="card">
-        <div class="card-icon">📊</div>
-        <h3>Analytics</h3>
-        <p>View usage stats, activity logs, and performance insights for your account.</p>
+      <div class="info-card">
+        <div class="card-label">Privilege Level</div>
+        <div class="card-value green">ROOT / ADMIN</div>
+      </div>
+      <div class="info-card">
+        <div class="card-label">Target System</div>
+        <div class="card-value">Restricted Access Portal</div>
+      </div>
+      <div class="info-card">
+        <div class="card-label">Attack Vector</div>
+        <div class="card-value">Authentication Bypass</div>
       </div>
     </div>
 
-    <div class="status-bar">
-      <div class="status-dot"></div>
-      <span>All systems operational</span>
-      <span id="clock"></span>
+    <div class="members-section">
+      <div class="members-title">// created by — Group 5</div>
+      <div class="members-grid">
+        <div class="member-chip">Angeles</div>
+        <div class="member-chip">Blockstock</div>
+        <div class="member-chip">Geronimo</div>
+        <div class="member-chip">Malana</div>
+        <div class="member-chip">Ramos</div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <span class="green">//</span> This system was intentionally deployed as part of an academic activity.<br>
+      <span class="green">//</span> IT 023-IT33S2 — Ethical Hacking and Penetration Testing.<br>
+      <span class="green">//</span> Unauthorized access to real systems without permission is illegal. Always hack responsibly.
     </div>
   </main>
 
   <script>
-    // Auth guard
     const token = sessionStorage.getItem('auth_token');
-    const user = sessionStorage.getItem('auth_user') || 'user';
-    if (!token) {
-      window.location.href = '/';
-    }
+    const user = sessionStorage.getItem('auth_user') || 'unknown';
+    if (!token) window.location.href = '/';
 
     document.getElementById('user-display').textContent = user;
     document.getElementById('hero-user').textContent = user;
+    document.getElementById('session-id').textContent = token ? token.slice(-8).toUpperCase() : '—';
 
     function logout() {
       sessionStorage.removeItem('auth_token');
@@ -260,13 +338,17 @@
       window.location.href = '/';
     }
 
-    // Live clock
+    function copyFlag(btn) {
+      navigator.clipboard.writeText('FLAG{gr0up5_h4s_b33n_pwn3d}');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy Flag', 2000);
+    }
+
     function updateClock() {
       document.getElementById('clock').textContent =
-        new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        new Date().toLocaleTimeString('en-US', { hour12: false });
     }
-    updateClock();
-    setInterval(updateClock, 1000);
+    updateClock(); setInterval(updateClock, 1000);
   </script>
 </body>
 </html>
