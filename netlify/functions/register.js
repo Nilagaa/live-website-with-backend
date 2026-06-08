@@ -1,8 +1,5 @@
-// netlify/functions/register.js
-// Saves new user credentials permanently to Netlify Blobs
-
-const { getStore } = require('@netlify/blobs');
 const crypto = require('crypto');
+const { getStore } = require('@netlify/blobs');
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
@@ -16,7 +13,6 @@ exports.handler = async (event) => {
   try {
     const { username, password } = JSON.parse(event.body);
 
-    // Basic validation
     if (!username || !password) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Username and password required' }) };
     }
@@ -30,11 +26,16 @@ exports.handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: 'Username can only contain letters, numbers, and underscores' }) };
     }
 
-    const store = getStore('users');
-    const key = username.toLowerCase();
+    const store = getStore({
+      name: 'users',
+      consistency: 'strong',
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_TOKEN,
+    });
 
-    // Check if username already taken
+    const key = username.toLowerCase();
     const existing = await store.get(key);
+
     if (existing) {
       return {
         statusCode: 409,
@@ -42,9 +43,8 @@ exports.handler = async (event) => {
       };
     }
 
-    // Save the new user
     await store.setJSON(key, {
-      username: username,
+      username,
       passwordHash: hashPassword(password),
       createdAt: new Date().toISOString()
     });
@@ -59,7 +59,7 @@ exports.handler = async (event) => {
     console.error('Register error:', err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ error: err.message || 'Internal server error' })
     };
   }
 };

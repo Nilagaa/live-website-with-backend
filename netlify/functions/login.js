@@ -1,8 +1,5 @@
-// netlify/functions/login.js
-// Reads user credentials stored in Netlify Blobs (persistent key-value store)
-
-const { getStore } = require('@netlify/blobs');
 const crypto = require('crypto');
+const { getStore } = require('@netlify/blobs');
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
@@ -20,10 +17,13 @@ exports.handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: 'Username and password required' }) };
     }
 
-    // Connect to Netlify Blobs store named "users"
-    const store = getStore('users');
+    const store = getStore({
+      name: 'users',
+      consistency: 'strong',
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_TOKEN,
+    });
 
-    // Look up user record
     const userData = await store.get(username.toLowerCase(), { type: 'json' });
 
     if (!userData) {
@@ -33,8 +33,7 @@ exports.handler = async (event) => {
       };
     }
 
-    const hashedInput = hashPassword(password);
-    if (hashedInput !== userData.passwordHash) {
+    if (hashPassword(password) !== userData.passwordHash) {
       return {
         statusCode: 401,
         body: JSON.stringify({ success: false, error: 'Invalid username or password' })
@@ -53,7 +52,7 @@ exports.handler = async (event) => {
     console.error('Login error:', err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ error: err.message || 'Internal server error' })
     };
   }
 };
