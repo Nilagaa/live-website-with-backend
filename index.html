@@ -115,6 +115,15 @@
       margin: 0 auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .created-by {
+      margin-top: 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
   </style>
 </head>
 <body>
@@ -122,6 +131,7 @@
 
   <div class="card">
     <h1>Sign in</h1>
+
 
     <div class="field">
       <label for="username">Username</label>
@@ -138,6 +148,8 @@
       <div class="spinner" id="spinner"></div>
     </button>
   </div>
+
+  <div class="created-by">created by — Group 5</div>
 
   <script>
     async function handleLogin() {
